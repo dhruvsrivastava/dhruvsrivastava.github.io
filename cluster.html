@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+	<meta charset="utf-8">
+<head>
+	<title> Clustering </title>
+	<script type="text/javascript" src = "js/d3.js"></script>
+</head>
+<body>
+
+	<h1> Growth of Clusters </h1>
+	<h2> Visualisation made using D3 Transitions</h2>
+	<h3> Please wait ~10 seconds for script to load </h3>
+
+	<script type="text/javascript">
+		d3.csv("cluster.csv" , function(error , data) {
+			points = []
+			// console.log(data);
+			data.forEach( function(d) {
+				console.log(d);
+				// console.log(d['userID']);
+				// console.log(d['cluster']);
+				var x = parseInt(d['userID']);
+				var y = parseInt(d['cluster']);
+				points.push([x , y]);
+			});
+			// console.log(points);
+
+			d3.select("body")
+			  .data(points)
+			  .enter()
+			  .append("p")
+			  .text( function(d , i) {
+			  		return String(d[0]) + " , " + String(d[1]);
+			  });
+
+			var h = 1000;
+			var w = 1000;
+			var svg = d3.select("body")
+					  	.append("svg")
+					  	.attr("height" , h + 1000)
+					  	.attr("width" , w + 100);
+
+			setInterval(Generate , 9000);
+
+			function Generate() {
+				var numCluster = 7;
+				var center = []
+				var Next = []
+				var cx = 0, cy = 0;
+				for(var i = 0;i < numCluster;i++) {
+					if (i % 3 == 0) {
+						cx = 150;
+						cy += (h / numCluster);
+					}
+					else {
+						cx += 400;
+					}
+					center.push([cx , cy]);
+					Next.push([cx , cy , "black"]);
+				}
+				// console.log(center);
+
+				svg.selectAll("circle")
+				   .data(center)
+				   .enter()
+				   .append("circle")
+				   .attr("fill" , "black")
+				   .attr("cx" , function(d) {
+				   		return d[0];
+				   })
+				   .attr("cy" , function(d) {
+				   		return d[1];
+				   })
+				   .attr("r" , 10);
+
+				var CSS_COLOR_NAMES = ["DarkRed","DarkSlateBlue","DarkSeaGreen","DarkGrey","MidnightBlue","OrangeRed","SteelBlue","Silver","GreenYellow","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkS"];
+
+				var items = 100;
+				// console.log(center);
+				for (var i = 0; i < items; i++) {
+					var cnum = 1 + Math.floor(Math.random() * numCluster);
+					// console.log(cnum);
+					// console.log(center[cnum - 1]);
+					center.push(center[cnum - 1]);
+					var dx = Math.floor(Math.random() * 150);
+					if (Math.floor(Math.random() * 150) % 2 == 0)
+						dx *= -1;
+
+					var block = (h / (2 * numCluster));
+					// alert(block);
+
+					var dy = Math.floor(Math.random() * block);
+					if (Math.floor(Math.random() * block) % 2 == 0)
+						dy *= -1;
+					var Nx = center[cnum - 1][0] + dx;
+					var Ny = center[cnum - 1][1] + dy;
+					Next.push([Nx , Ny , CSS_COLOR_NAMES[cnum - 1]]);
+					// console.log([Nx , Ny]);
+				}
+				// console.log(center)
+				// console.log(Next);
+
+				svg.selectAll("circle")
+				   .data(center)
+				   .enter()
+				   .append("circle")
+				   .attr("cx" , function(d) {
+				  		return d[0];
+				   })
+				   .attr("cy" , function(d) {
+				  		return d[1];
+				   })
+				   .attr("r" , 10);
+
+				animate(Next)
+			}
+
+			function animate(Next) {
+				svg.selectAll("circle")
+				   .data(Next)
+				   .attr("fill" , function(d) {
+				   		return d[2];
+				   })
+				   .transition()
+				   .duration(4000)
+				   .attr("cx" , function(d) {
+				   		return d[0];
+				   })
+				   .attr("cy" , function(d) {
+				   		return d[1];
+				   })
+				   .each("end" , function(d , i) {
+				   		if (i == Next.length - 1) {
+				   			Remove(Next);
+				   		}
+				   })
+				   
+			}
+
+			function Remove(Next) {
+				console.log(Next);
+				console.log("removing");
+				svg.selectAll("circle")
+				   .data(Next)
+				   .transition()
+				   .duration(4000)
+				   .attr("cy" , h)
+				   .style("fill-opacity" , 1e-6)
+			       .remove()			
+			}
+
+		});
+		
+	</script>
+</body>
+</html>
