@@ -40,11 +40,13 @@
 					  	.attr("height" , h + 1000)
 					  	.attr("width" , w + 100);
 
-			setInterval(Generate , 9000);
+			Generate()
+			setInterval(Generate , 15000);
 
 			function Generate() {
 				var numCluster = 7;
 				var center = []
+				var count = []
 				var Next = []
 				var cx = 0, cy = 0;
 				for(var i = 0;i < numCluster;i++) {
@@ -55,6 +57,7 @@
 					else {
 						cx += 400;
 					}
+					count.push([cx , cy , 0]);
 					center.push([cx , cy]);
 					Next.push([cx , cy , "black"]);
 				}
@@ -71,7 +74,7 @@
 				   .attr("cy" , function(d) {
 				   		return d[1];
 				   })
-				   .attr("r" , 10);
+				   .attr("r" , 20);
 
 				var CSS_COLOR_NAMES = ["DarkRed","DarkSlateBlue","DarkSeaGreen","DarkGrey","MidnightBlue","OrangeRed","SteelBlue","Silver","GreenYellow","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkS"];
 
@@ -79,6 +82,7 @@
 				// console.log(center);
 				for (var i = 0; i < items; i++) {
 					var cnum = 1 + Math.floor(Math.random() * numCluster);
+					count[cnum - 1][2] += 1;
 					// console.log(cnum);
 					// console.log(center[cnum - 1]);
 					center.push(center[cnum - 1]);
@@ -97,8 +101,26 @@
 					Next.push([Nx , Ny , CSS_COLOR_NAMES[cnum - 1]]);
 					// console.log([Nx , Ny]);
 				}
+				console.log(count);
 				// console.log(center)
 				// console.log(Next);
+
+				svg.selectAll("text")
+				   .data(count)
+				   .enter()
+				   .append("text")
+				   .text( function(d) {
+				   		return "count " + d[2];
+				   })
+				   .attr("x" , function(d) {
+				   		return d[0] + 30;
+				   })
+				   .attr("y" , function(d) {
+				   		return d[1] + 30;
+				   })
+				   .attr("font-family", "sans-serif")
+		   		   .attr("font-size", "15px")
+		      	   .attr("fill", "red")
 
 				svg.selectAll("circle")
 				   .data(center)
@@ -110,38 +132,52 @@
 				   .attr("cy" , function(d) {
 				  		return d[1];
 				   })
-				   .attr("r" , 10);
+				   .attr("r" , 20);
 
-				animate(Next)
+				animate(Next , numCluster , count)
 			}
 
-			function animate(Next) {
+			function animate(Next , numCluster , count) {
 				svg.selectAll("circle")
 				   .data(Next)
 				   .attr("fill" , function(d) {
 				   		return d[2];
 				   })
 				   .transition()
-				   .duration(4000)
+				   .duration(8000)
 				   .attr("cx" , function(d) {
 				   		return d[0];
 				   })
 				   .attr("cy" , function(d) {
 				   		return d[1];
 				   })
+				   .attr("r" , function(d , i) {
+				   		if (i < numCluster)
+				   			return 20;
+				   		else
+				   			return 5;
+				   	})
 				   .each("end" , function(d , i) {
 				   		if (i == Next.length - 1) {
-				   			Remove(Next);
+				   			Remove(Next , count);
 				   		}
 				   })
 				   
 			}
 
-			function Remove(Next) {
+			function Remove(Next , count) {
 				console.log(Next);
 				console.log("removing");
 				svg.selectAll("circle")
 				   .data(Next)
+				   .transition()
+				   .duration(4000)
+				   .attr("cy" , h)
+				   .style("fill-opacity" , 1e-6)
+			       .remove()
+
+			    svg.selectAll("text")
+				   .data(count)
 				   .transition()
 				   .duration(4000)
 				   .attr("cy" , h)
